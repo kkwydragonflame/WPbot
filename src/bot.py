@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 # Load environment variables from .env file
 load_dotenv()
@@ -22,10 +22,35 @@ bot = commands.Bot(
   intents=intents
 )
 
+def load_state():
+    """
+    Load the bot's state from a file or database.
+    This function should be implemented to restore any necessary state when the bot starts.
+    """
+    # Placeholder for loading state logic
+    pass
+
+def save_state():
+    """
+    Save the bot's state to a file or database.
+    This function should be implemented to persist any necessary state when the bot shuts down.
+    """
+    # Placeholder for saving state logic
+    pass
+
 # Event handler for when the bot is ready and connected to Discord
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} ({bot.user.id})')
+
+@tasks.loop(hours=24)
+async def yearly_progression_check():
+    """
+    This task runs every 24 hours to check for users eligible for progression.
+    It should be implemented to iterate through members and prompt them for role progression.
+    """
+    # Placeholder for yearly progression check logic
+    pass
 
 # Start the bot
 bot.run(token)
