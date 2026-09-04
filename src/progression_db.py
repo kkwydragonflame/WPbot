@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-DATABASE_PATH = Path(__file__).parent / "progression.db"
+DATABASE_PATH = Path(__file__).parent.parent / "progression.sqlite3"
 
 def initialize_database():
     """
