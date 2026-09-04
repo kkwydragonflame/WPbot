@@ -1,5 +1,5 @@
 import discord
-from src.progression_roles import get_next_role, can_progress, VALID_ROLES
+from src.progression_roles import get_next_role, VALID_ROLES
 
 class ProgressionView(discord.ui.View):
     def __init__(self, member, current_role, next_role):
@@ -10,15 +10,35 @@ class ProgressionView(discord.ui.View):
 
     @discord.ui.button(label="Yes, uppgradera mig", style=discord.ButtonStyle.green)
     async def yes_button(self, interaction: discord.Interaction, button):
-        await self.member.add_roles(discord.utils.get(interaction.guild.roles, name=self.next_role))
-        await self.member.remove_roles(discord.utils.get(interaction.guild.roles, name=self.current_role))
+        if interaction.user.id != self.member.id:
+            await interaction.response.send_message(
+                "Du kan inte svara på den här frågan för någon annan.",
+                ephemeral=True
+            )
+            return
+
+        guild = self.member.guild
+
+        next_role = discord.utils.get(guild.roles, name=self.next_role)
+        current_role = discord.utils.get(guild.roles, name=self.current_role)
+
+        if next_role is None or current_role is None:
+            await interaction.response.send_message(
+                "Kunde inte hitta rollerna i servern. Kontakta en administratör.",
+                ephemeral=True
+            )
+            return
+
+        await self.member.add_roles(next_role)
+        await self.member.remove_roles(current_role)
+
         await interaction.response.send_message(
             f"Uppgraderad {self.member.mention} från {self.current_role} till {self.next_role}.",
             ephemeral=True
         )
         self.stop()
 
-    @discord.ui.button(label="Not yet", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="Inte än", style=discord.ButtonStyle.red)
     async def no_button(self, interaction: discord.Interaction, button):
         await interaction.response.send_message("Ok, du blir tillfrågad igen nästa år.", ephemeral=True)
         self.stop()
