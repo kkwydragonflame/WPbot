@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 
 import discord
 from discord.ext import commands, tasks
-from src.progression_roles import get_next_role, VALID_ROLES
-from src.progression_view import ask_for_progression
-from src.progression_db import initialize_database, has_user_been_prompted, record_user_prompt
+from progression_roles import get_next_role, VALID_ROLES
+from progression_view import ask_for_progression
+from progression_db import initialize_database, has_user_been_prompted, record_user_prompt
 
 # Load environment variables from .env file
 load_dotenv()

@@ -1,5 +1,5 @@
 import discord
-from src.progression_roles import get_next_role, VALID_ROLES
+from progression_roles import get_next_role, VALID_ROLES
 
 class ProgressionView(discord.ui.View):
     def __init__(self, member, current_role, next_role):
