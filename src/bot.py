@@ -107,9 +107,6 @@ async def yearly_progression_check():
         if current_role is None:
             continue  # Member has no valid role
 
-        if current_role == "Alumni":
-            continue  # Alumni role, no further progression
-
         next_role = get_next_role(current_role)
         if next_role is None:
             continue  # No next role available
