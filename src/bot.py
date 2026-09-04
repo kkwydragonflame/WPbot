@@ -1,15 +1,19 @@
 import os
 import json
+from datetime import datetime
 
 from dotenv import load_dotenv
 
 import discord
 from discord.ext import commands, tasks
+from src.progression_roles import get_next_role, VALID_ROLES
+from src.progression_view import ask_for_progression
 
 # Load environment variables from .env file
 load_dotenv()
 
 token = os.getenv("BOT_TOKEN")
+guild_id = os.getenv("GUILD_ID")
 
 if token is None:
     raise ValueError("Bot token not found in environment variables. Please set BOT_TOKEN in the .env file.")
@@ -54,6 +58,7 @@ def save_state(data):
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} ({bot.user.id})')
+    yearly_progression_check.start()
 
 @tasks.loop(hours=24)
 async def yearly_progression_check():
@@ -61,8 +66,47 @@ async def yearly_progression_check():
     This task runs every 24 hours to check for users eligible for progression.
     It should be implemented to iterate through members and prompt them for role progression.
     """
-    # Placeholder for yearly progression check logic
-    pass
+    now = datetime.now() # Or use discord.utils.utcnow() for UTC time?
+    if now.month != 9 or now.day != 1:
+        return  # Only run on September 1st
+
+    guild = bot.get_guild(guild_id)  # Replace with guild ID
+    if guild is None:
+        print("Guild not found.")
+        return
+
+    state = load_state()
+    this_year = now.year
+
+    for member in guild.members:
+        if member.bot:
+            continue  # Skip bots
+
+        current_role = None
+        for role in member.roles:
+            if role.name in VALID_ROLES: # Skip roles that are not valid progression roles
+                current_role = role.name
+                break
+
+        if current_role is None:
+            continue  # Member has no valid role
+
+        if current_role == "Alumni":
+            continue  # Alumni role, no further progression
+
+        next_role = get_next_role(current_role)
+        if next_role is None:
+            continue  # No next role available
+
+        last_asked_year = state.get(str(member.id), {}).get("last_asked_year", 0)
+        if last_asked_year >= this_year:
+            continue  # Already asked this year
+
+        await ask_for_progression(member)
+
+        # Update state to indicate that the user has been asked this year
+        state[str(member.id)] = {"last_asked_year": this_year}
+        save_state(state)
 
 # Start the bot
 bot.run(token)
