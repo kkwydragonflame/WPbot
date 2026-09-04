@@ -1,5 +1,4 @@
 import os
-import json
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -8,6 +7,7 @@ import discord
 from discord.ext import commands, tasks
 from src.progression_roles import get_next_role, VALID_ROLES
 from src.progression_view import ask_for_progression
+from src.progression_db import initialize_database, has_user_been_prompted, record_user_prompt
 
 # Load environment variables from .env file
 load_dotenv()
@@ -21,9 +21,6 @@ if token is None:
 # Default set of Gateway intents, which includes all non-privileged events
 intents = discord.Intents.default()
 
-# Path to state file for saving and loading bot state
-STATE_FILE_PATH = "progression_state.json"
-
 # Define the months the bot should prompt users for progression.
 # In this case, it prompts in August (8) and September (9) and October (10).
 PROMPT_MONTHS = [8, 9, 10]
@@ -33,30 +30,6 @@ bot = commands.Bot(
   command_prefix="!", 
   intents=intents
 )
-
-def load_state():
-    """
-    Load the bot's state from a file or database.
-    This function should be implemented to restore any necessary state when the bot starts.
-    """
-    if not os.path.exists(STATE_FILE_PATH):
-        return {}
-    try:
-        return json.loads(STATE_FILE_PATH.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(f"Error loading state: {e}")
-        return {}
-
-def save_state(data):
-    """
-    Save the bot's state to a file or database.
-    This function should be implemented to persist any necessary state when the bot shuts down.
-    """
-    try:
-        with open(STATE_FILE_PATH, "w", encoding="utf-8") as f:
-            json.dump(data, f)
-    except Exception as e:
-        print(f"Error saving state: {e}")
 
 def get_school_year(now):
     """
@@ -92,8 +65,6 @@ async def yearly_progression_check():
         print("Guild not found.")
         return
 
-    state = load_state()
-
     for member in guild.members:
         if member.bot:
             continue  # Skip bots
@@ -111,15 +82,18 @@ async def yearly_progression_check():
         if next_role is None:
             continue  # No next role available
 
-        last_asked_year = state.get(str(member.id), {}).get("last_asked_year", 0)
-        if last_asked_year >= school_year:
+        # Query database if user has already been asked this year
+        if has_user_been_prompted(guild.id, member.id, str(school_year)):
             continue  # Already asked this year
 
+        # Wait for view to prompt the user for progression
         await ask_for_progression(member)
 
         # Update state to indicate that the user has been asked this year
-        state[str(member.id)] = {"last_asked_year": school_year}
-        save_state(state)
+        record_user_prompt(guild.id, member.id, str(school_year))
+
+# Initialize the database when the bot starts
+initialize_database()
 
 # Start the bot
 bot.run(token)
