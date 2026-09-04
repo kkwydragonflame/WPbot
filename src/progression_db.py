@@ -13,7 +13,7 @@ def initialize_database():
             CREATE TABLE IF NOT EXISTS progression_checks (
                 guild_id INTEGER NOT NULL,
                 user_id INTEGER NOT NULL,
-                school_year TEXT NOT NULL,
+                school_year INTEGER NOT NULL,
                 asked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 responded_at TIMESTAMP,
                 PRIMARY KEY (guild_id, user_id, school_year)

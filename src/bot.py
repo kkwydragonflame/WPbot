@@ -20,6 +20,7 @@ if token is None:
 
 # Default set of Gateway intents, which includes all non-privileged events
 intents = discord.Intents.default()
+intents.members = True  # Enable the members intent to access member information
 
 # Define the months the bot should prompt users for progression.
 # In this case, it prompts in August (8) and September (9) and October (10).
@@ -44,7 +45,10 @@ def get_school_year(now):
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} ({bot.user.id})')
-    yearly_progression_check.start()
+
+    if not yearly_progression_check.is_running():
+        print("Starting yearly progression check task...")
+        yearly_progression_check.start()
 
 # Task to check for yearly progression, which runs every 24 hours
 @tasks.loop(hours=24)
@@ -83,14 +87,14 @@ async def yearly_progression_check():
             continue  # No next role available
 
         # Query database if user has already been asked this year
-        if has_user_been_prompted(guild.id, member.id, str(school_year)):
+        if has_user_been_prompted(guild.id, member.id, school_year):
             continue  # Already asked this year
 
         # Wait for view to prompt the user for progression
         await ask_for_progression(member)
 
         # Update state to indicate that the user has been asked this year
-        record_user_prompt(guild.id, member.id, str(school_year))
+        record_user_prompt(guild.id, member.id, school_year)
 
 # Initialize the database when the bot starts
 initialize_database()

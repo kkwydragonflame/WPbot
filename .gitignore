@@ -417,4 +417,5 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
+# Database files
 progression.sqlite3
