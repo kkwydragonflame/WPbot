@@ -13,12 +13,8 @@ VALID_PROGRESSION_MOVES = {
 def get_next_role(current_role):
     """
     Given a current role, return the next role in the progression.
-    If the current role is not valid or has no next role, return None.
     """
-    for move in VALID_PROGRESSION_MOVES:
-        if move[0] == current_role:
-            return move[1]
-    return None
+    return VALID_PROGRESSION_MOVES.get(current_role)
 
 
 def can_progress(current_role, target_role):
