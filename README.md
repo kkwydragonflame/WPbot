@@ -64,3 +64,18 @@ The progression roles are configured in [src/progression_roles.py](src/progressi
 - [src/progression_roles.py](src/progression_roles.py): defines valid roles and allowed transitions.
 - [src/progression_view.py](src/progression_view.py): sends the DM and handles the Yes/Not yet buttons.
 - [src/progression_db.py](src/progression_db.py): creates and queries the SQLite database.
+
+## Contributing
+
+1. Fork this repository on GitHub and clone your fork.
+2. Create a branch for your change in your fork.
+3. Make focused changes and update the README when behavior or setup changes.
+4. Run a basic syntax check before pushing your branch:
+
+	```powershell
+	python -m compileall src
+	```
+
+5. Push your branch to your fork and open a pull request from it to this repository's `main` branch. Include a short description of the change and how you verified it.
+
+Do not commit `.env`, `progression.sqlite3`, or bot tokens. Keep changes compatible with Python 3.10 or newer.
